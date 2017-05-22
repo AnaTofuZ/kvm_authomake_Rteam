@@ -28,6 +28,19 @@ $group = "dande" if $opt{group}=~ /^[dD].*/;
 
 die "有効なgropuを指定して" if !defined $group; 
 
+my $number_vm = 0;
+my $text = "./.group/$group";
+
+if (! $opt{num}) {
+
+    open(my $fh,'<',$text);
+    $number_vm +=$_ while (<$fh>);
+    $number_vm++;
+
+} else {
+    $number_vm = $opt{num};
+}
+
 
 =pod
 
