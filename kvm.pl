@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-use Getopt::Long qw(:config posix_default no_ignore_case bundling auto_help);
+use Getopt::Long qw(:config auto_help);
 
 # オプション指定
 
@@ -13,11 +13,20 @@ GetOptions(
 
 # whoami でユーザーが取れるのでrootか判断
 
-if ( `whoami` eq "root"){
+if ( $> == 0){
     print "rootでお願いします!\n";
-    exit 1;
+    die; 
 }
 
+die "groupを指定してください "if (! $opt{group});
+
+my $group =undef;
+
+$group = "flogs" if $opt{group}=~ /^[fF].*/;
+$group = "jelly" if $opt{group}=~ /^[jJ].*/;
+$group = "dande" if $opt{group}=~ /^[dD].*/;
+
+die "有効なgropuを指定して" if !defined $group; 
 
 
 =pod
