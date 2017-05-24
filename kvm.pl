@@ -33,11 +33,15 @@ my $text = "./.group/$group";
 
 if (! $opt{num}) {
 
+    # numberが指定されていな場合はfileから現在立っているVM数を把握
+
     open(my $fh_vm_number,'<',$text);
     $number_vm +=$_ while (<$fh_vm_number>);
     $number_vm++;
 
 } else {
+    # number 指定時は引数に応じた命名規則を設定
+
     $number_vm = $opt{num};
 }
     close $fh_vm_number;
@@ -45,15 +49,53 @@ if (! $opt{num}) {
 
 if( $opt{from}){
 
-    system("");
-    open(my $fh_number,"<","./test");
+
+    my $xml_pass = "/etc/libvirt/qemu/$group$opt{from}.xml";
+    open(my $fh_old_xml,"<",$xml_pass);
+    my $old_mac_add;
+       
+    while (my $line = <$fh_old_xml>) {
+        chomp $line;    
+        if($line =~/((?:[0-9a-f]{2}:?){6})/){
+            $old_mac_add = $1;
+            next;
+        }
+    }
+
+    close $fh_old_xml;
+
+    system("virt-clone --original $group$opt{from} --name $group$number_vm --file /home/kvm/2017");
+    my $new_xml_pass = "/etc/libvirt/qemu/$group$number_vm.xml";
+    open(my $new_xml_op,"<",$new_xml_pass);
+    my  @putxml;
+
+    while (my $line = <$new_xml_op>) {
+        chomp $line;    
+        if($line =~s/((?:[0-9a-f]{2}:?){6})/$old_mac_add/);
+
+        push @putxml,$line;
+    }
+
+    close $new_xml_op;
+
+    open (my $new_xml_out,">",$new_xml_pass);
+    for  (@putxml){
+        print $new_xml_out "$_\n";
+    }
+
+    close $new_xml_out;
+    system("virsh define $new_xml_pass");
 
 
 } else{
-    system("");
+    my $xml_pass = "/etc/libvirt/qemu/$group$number_vm.xml";
+    system("virt-clone --original $group$opt{from} --name $group$number_vm --file /home/kvm/2017");
 
 }
 
+open (my $out_vm_numbers, ">",$text);
+print $out_vm_numbers $number_vm;
+close $out_vm_numbers;
 
 =pod
 
