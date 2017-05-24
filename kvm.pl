@@ -13,7 +13,7 @@ GetOptions(
 
 # whoami でユーザーが取れるのでrootか判断
 
-if ( $> == 0){
+if ( $> != 0){
     print "rootでお願いします!\n";
     die;
 }
@@ -39,13 +39,13 @@ if (! $opt{num}) {
     $number_vm +=$_ while (<$fh_vm_number>);
     $number_vm++;
 
+    close $fh_vm_number;
+
 } else {
     # number 指定時は引数に応じた命名規則を設定
 
     $number_vm = $opt{num};
 }
-    close $fh_vm_number;
-    open $fh_vm_number;
 
 if( $opt{from}){
 
@@ -71,7 +71,7 @@ if( $opt{from}){
 
     while (my $line = <$new_xml_op>) {
         chomp $line;    
-        if($line =~s/((?:[0-9a-f]{2}:?){6})/$old_mac_add/);
+        $line =~s/((?:[0-9a-f]{2}:?){6})/$old_mac_add/;
 
         push @putxml,$line;
     }
